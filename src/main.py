@@ -11,11 +11,14 @@ BASE_URL = "https://api.laozhang.ai/v1/chat/completions"
 @app.route('/api', methods=['GET'])
 def generate():
     prompt = request.args.get('prompt')
+    model = request.args.get('model', 'claude-3-5-sonnet-latest')
+    uid = request.args.get('uid')
+    
     if not prompt:
         return jsonify({"error": "No prompt provided"}), 400
 
     payload = {
-        "model": "claude-3-5-sonnet-latest", # Switching to a Claude model as GPT-4o failed in test
+        "model": model,
         "messages": [{"role": "user", "content": prompt}]
     }
     
