@@ -1,7 +1,6 @@
 import requests
 import os
 import json
-import psycopg2
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -9,47 +8,9 @@ app = Flask(__name__)
 # Config
 API_KEY = "sk-YPnScysOGcvoVpshC99966Df24Cc46C7BdEfD48dC56a97A2"
 BASE_URL = "https://api.laozhang.ai/v1/chat/completions"
-DATABASE_URL = os.environ.get('DATABASE_URL')
 
-def get_db_connection():
-    return psycopg2.connect(DATABASE_URL)
-
-def init_db():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS chat_history (
-            uid TEXT PRIMARY KEY,
-            history JSONB
-        )
-    ''')
-    conn.commit()
-    cur.close()
-    conn.close()
-
-init_db()
-
-def get_history(uid):
-    if not uid: return []
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT history FROM chat_history WHERE uid = %s', (uid,))
-    row = cur.fetchone()
-    cur.close()
-    conn.close()
-    return row[0] if row else []
-
-def save_history(uid, history):
-    if not uid: return
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('''
-        INSERT INTO chat_history (uid, history) VALUES (%s, %s)
-        ON CONFLICT (uid) DO UPDATE SET history = EXCLUDED.history
-    ''', (uid, json.dumps(history)))
-    conn.commit()
-    cur.close()
-    conn.close()
+# In-memory history (volatile - will reset on server restart)
+chat_histories = {}
 
 @app.route('/api', methods=['GET'])
 def generate():
@@ -61,7 +22,11 @@ def generate():
     if not prompt:
         return jsonify({"error": "No prompt provided"}), 400
 
-    history = get_history(uid)
+    # Get or initialize history for this UID
+    if uid not in chat_histories:
+        chat_histories[uid] = []
+    
+    history = chat_histories[uid]
     
     # Construct the message content
     current_content = []
@@ -93,7 +58,6 @@ def generate():
         if 'choices' in data and len(data['choices']) > 0:
             content = data['choices'][0].get('message', {}).get('content', '')
             history.append({"role": "assistant", "content": content})
-            save_history(uid, history)
         
         return jsonify({
             "auteur": "Bruno",
@@ -104,7 +68,7 @@ def generate():
 
 @app.route('/gemini', methods=['GET'])
 def gemini():
-    return generate() # Use the main generate logic for gemini as well to maintain history
+    return generate()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
