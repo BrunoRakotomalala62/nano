@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 # Config
-API_KEY = "sk-YPnScysOGcvoVpshC99966Df24Cc46C7BdEfD48dC56a97A2"
+API_KEY = os.environ.get("API_KEY_LAOZHANG", "sk-YPnScysOGcvoVpshC99966Df24Cc46C7BdEfD48dC56a97A2")
 BASE_URL = "https://api.laozhang.ai/v1/chat/completions"
 
 # In-memory history (volatile - will reset on server restart)
