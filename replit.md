@@ -1,16 +1,15 @@
-# Nano
+# Nano AI API
 
 ## Overview
-A simple Node.js web application using Express.
+A simple Flask-based API for text generation using models from laozhang.ai.
 
 ## Project Structure
-- `server.js` - Main Express server
-- `public/` - Static files (HTML, CSS, JS)
-- `package.json` - Node.js dependencies
+- `src/main.py` - Flask server implementation
+- `requirements.txt` - Python dependencies
 
 ## Running the Application
-The application runs on port 5000 using `npm start`.
+The application runs on port 5000 using `python src/main.py`.
 
-## Development
-- Node.js 20
-- Express 4.x
+## API Endpoint
+- `GET /api?prompt=<your_prompt>`
+  - Returns the AI-generated response in JSON format.
