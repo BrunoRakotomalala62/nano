@@ -12,15 +12,32 @@ BASE_URL = "https://api.laozhang.ai/v1/chat/completions"
 def generate():
     prompt = request.args.get('prompt')
     model = request.args.get('model', 'claude-3-5-sonnet-latest')
+    image_url = request.args.get('image')
     uid = request.args.get('uid')
     
     if not prompt:
         return jsonify({"error": "No prompt provided"}), 400
 
-    payload = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}]
-    }
+    if image_url:
+        # Multimodal payload for vision-capable models
+        payload = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": image_url}}
+                    ]
+                }
+            ]
+        }
+    else:
+        # Text-only payload
+        payload = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}]
+        }
     
     headers = {
         "Authorization": f"Bearer {API_KEY}",
