@@ -30,5 +30,38 @@ def generate():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/gemini', methods=['GET'])
+def gemini():
+    prompt = request.args.get('prompt')
+    image_url = request.args.get('image')
+    uid = request.args.get('uid')
+    
+    if not prompt or not image_url:
+        return jsonify({"error": "Missing prompt or image URL"}), 400
+
+    payload = {
+        "model": "gemini-2.5-flash-image",
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": image_url}}
+                ]
+            }
+        ]
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        response = requests.post(BASE_URL, json=payload, headers=headers)
+        return response.json()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
