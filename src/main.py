@@ -46,7 +46,17 @@ def generate():
 
     try:
         response = requests.post(BASE_URL, json=payload, headers=headers)
-        return response.json()
+        data = response.json()
+        
+        # Simplify the response format
+        content = ""
+        if 'choices' in data and len(data['choices']) > 0:
+            content = data['choices'][0].get('message', {}).get('content', '')
+        
+        return jsonify({
+            "auteur": "Bruno",
+            "content": content
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -79,7 +89,17 @@ def gemini():
 
     try:
         response = requests.post(BASE_URL, json=payload, headers=headers)
-        return response.json()
+        data = response.json()
+        
+        # Simplify the response format
+        content = ""
+        if 'choices' in data and len(data['choices']) > 0:
+            content = data['choices'][0].get('message', {}).get('content', '')
+            
+        return jsonify({
+            "auteur": "Bruno",
+            "content": content
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
